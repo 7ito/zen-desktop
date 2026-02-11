@@ -36,6 +36,9 @@ class ZenSessionStore extends nsZenPreloadedFeature {
     if (tabData._zenPinnedInitialState) {
       tab._zenPinnedInitialState = tabData._zenPinnedInitialState;
     }
+    if (Number.isInteger(tabData.zenWorkspaceIndex)) {
+      tab.setAttribute("zen-workspace-index", tabData.zenWorkspaceIndex);
+    }
   }
 
   async #waitAndCleanup() {

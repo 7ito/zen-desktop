@@ -1549,9 +1549,42 @@ class nsZenWorkspaces {
           });
           continue;
         }
+
+        let insertBefore = container.lastChild;
+        const indexAttr = tab.getAttribute("zen-workspace-index");
+        const workspaceIndex = indexAttr !== null ? Number(indexAttr) : null;
+        if (Number.isInteger(workspaceIndex)) {
+          const workspaceTabs = [];
+          for (const child of container.children) {
+            if (gBrowser.isTab(child)) {
+              workspaceTabs.push(child);
+              continue;
+            }
+            if (gBrowser.isTabGroup(child)) {
+              for (const groupTab of child.tabs) {
+                workspaceTabs.push(groupTab);
+              }
+            }
+          }
+          const filteredTabs = workspaceTabs.filter(
+            (t) =>
+              t.getAttribute("zen-workspace-id") === workspaceID &&
+              !t.pinned &&
+              !t.hasAttribute("zen-essential") &&
+              !t.hasAttribute("zen-empty-tab") &&
+              !t.hasAttribute("zen-glance-tab")
+          );
+          const targetTab = filteredTabs[workspaceIndex];
+          const targetNode = targetTab?.group ?? targetTab;
+          if (targetNode?.parentElement === container) {
+            insertBefore = targetNode;
+          }
+        }
+
         gBrowser.zenHandleTabMove(tab, () => {
           tab.setAttribute("zen-workspace-id", workspaceID);
-          container.insertBefore(tab, container.lastChild);
+          container.insertBefore(tab, insertBefore);
+          tab.removeAttribute("zen-workspace-index");
         });
       }
       // also change glance tab if it's the same tab
